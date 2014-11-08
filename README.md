@@ -28,6 +28,7 @@ Relies on the latest Clojure 1.7
 * yield-first (reduces until first truthy value.  underlies some & any)
 
 * transiterate
+
 Takes an Iterable and a transducer and gives you back an Iterable. Like LazyTransformer but for Iterables.
 Useful with the zipmap impl in this ns.
 
