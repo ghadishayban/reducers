@@ -16,9 +16,9 @@
 (defn ^:private reducing-impl
   [this f init body]
   `(p/CollReduce
-    (~'coll-reduce [this# f#]
+    (coll-reduce [this# f#]
        (p/coll-reduce this# f# (f#)))
-    (~'coll-reduce [~this ~f ~init]
+    (coll-reduce [~this ~f ~init]
        ~@body)))
 
 (defmacro reducible
@@ -26,7 +26,7 @@
    delegating to the provided two argument signature"
   [bindings & body]
   (assert (and (vector? bindings)
-               (= (count bindings) 2)
+               (= (clojure.core/count bindings) 2)
                (every? symbol? bindings)))
   (let [[f init] bindings]
     `(reify
@@ -159,3 +159,4 @@
    Analogous to (sequence xfn coll) but for Iterables"
   [xfn iterable]
   (XFIterable. xfn iterable))
+
