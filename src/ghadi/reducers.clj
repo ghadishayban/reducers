@@ -1,5 +1,5 @@
 (ns ghadi.reducers
-  (:refer-clojure :exclude [range zipmap repeatedly iterate some count select-keys])
+  (:refer-clojure :exclude [range zipmap repeatedly iterate some count select-keys cycle repeat frequencies])
   (:require [clojure.core.protocols :as p])
   (:import java.util.Iterator
            ghadi.XFIterable))
@@ -15,10 +15,8 @@
 
 (defn ^:private reducing-impl
   [this f init body]
-  `(p/CollReduce
-    (coll-reduce [this# f#]
-       (p/coll-reduce this# f# (f#)))
-    (coll-reduce [~this ~f ~init]
+  `(clojure.lang.IReduceInit
+    (reduce [~this ~f ~init]
        ~@body)))
 
 (defmacro reducible
@@ -48,6 +46,29 @@
        (unless-reduced ret
           (let [next (f seed)]
             (recur (rf ret next) next))))))
+
+(defn cycle
+  "Like core/cycle but only reducible. Will coerce argument to vector"
+  [coll]
+  (let [coll (vec coll)
+        n    (clojure.core/count coll)]
+    (reducible [rf init]
+      (if (pos? n)
+        (loop [acc init i 0]
+          (if (< i n)
+            (let [ret (rf acc (coll i))
+                  i   (unchecked-inc i)]
+              (unless-reduced ret
+                (recur ret (if (= i n) 0 i))))))
+        init))))
+
+;; alternatively (repeatedly (fn [] item))
+(defn repeat
+  [item]
+  (reducible [rf init]
+    (loop [ret init]
+      (let [ret (rf ret item)]
+        (unless-reduced ret (recur ret))))))
 
 (def ^:private yield
   (fn
