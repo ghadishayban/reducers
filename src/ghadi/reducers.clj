@@ -160,3 +160,12 @@
   [xfn iterable]
   (XFIterable. xfn iterable))
 
+(defn frequencies
+  "Like core/frequencies but takes a transducer"
+  [xfn coll]
+  (let [rf (fn
+             ([counts]
+                (persistent! counts))
+             ([counts x]
+                (assoc! counts x (inc (get counts x 0)))))]
+    (transduce xfn rf (transient {}) coll)))
